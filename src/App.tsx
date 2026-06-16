@@ -39,6 +39,7 @@ import {
   Pin,
   Globe,
   MessageCircle,
+  Keyboard,
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { motion, AnimatePresence } from 'motion/react';
@@ -111,6 +112,30 @@ export default function App() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [revealedMessages, setRevealedMessages] = useState<Record<string, boolean>>({});
+
+  // Local read message IDs tracking
+  const [readMessageIds, setReadMessageIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('mimu_read_message_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('mimu_read_message_ids', JSON.stringify(readMessageIds));
+    } catch (e) {
+      console.error('Failed to sync readMessageIds to localStorage:', e);
+    }
+  }, [readMessageIds]);
+
+  useEffect(() => {
+    if (selectedMessage && !readMessageIds.includes(selectedMessage.id)) {
+      setReadMessageIds((prev) => [...prev, selectedMessage.id]);
+    }
+  }, [selectedMessage, readMessageIds]);
 
   // Sender Page State (?u=username)
   const [targetUsername, setTargetUsername] = useState('');
@@ -849,7 +874,8 @@ export default function App() {
         return;
       }
 
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+      const keyLower = e.key.toLowerCase();
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || keyLower === 'j') {
         e.preventDefault();
         setKbSelectedIndex((prev) => {
           const nextIndex = prev + 1 >= displayedMessages.length ? 0 : prev + 1;
@@ -862,7 +888,7 @@ export default function App() {
           }
           return nextIndex;
         });
-      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || keyLower === 'k') {
         e.preventDefault();
         setKbSelectedIndex((prev) => {
           const nextIndex = prev - 1 < 0 ? displayedMessages.length - 1 : prev - 1;
@@ -880,6 +906,12 @@ export default function App() {
           e.preventDefault();
           setSelectedMessage(displayedMessages[kbSelectedIndex]);
         }
+      } else if (e.key === 'Delete' || e.key === 'Del') {
+        if (kbSelectedIndex >= 0 && kbSelectedIndex < displayedMessages.length) {
+          e.preventDefault();
+          const targetMsg = displayedMessages[kbSelectedIndex];
+          handleDeleteMessage(targetMsg.id);
+        }
       }
     };
 
@@ -887,7 +919,7 @@ export default function App() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [currentView, activeTab, displayedMessages, kbSelectedIndex]);
+  }, [currentView, activeTab, displayedMessages, kbSelectedIndex, handleDeleteMessage, setSelectedMessage]);
 
   useEffect(() => {
     if (kbSelectedIndex >= displayedMessages.length) {
@@ -1741,11 +1773,55 @@ export default function App() {
                         <p className="text-stone-500 text-[11px] leading-relaxed mt-0.5">Try changing your keywords or date range!</p>
                       </div>
                     ) : (
-                      <div
-                        ref={messagesGridRef}
-                        id="messages-grid"
-                        className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1"
-                      >
+                      <>
+                        {/* Keyboard Shortcuts Help bar near grid */}
+                        <div id="shortcuts-tooltip-header" className="flex items-center justify-between px-1 mb-2">
+                          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider font-mono">
+                            Inbox ({displayedMessages.length})
+                          </span>
+                          
+                          {/* Hover Tooltip */}
+                          <div className="relative group">
+                            <button
+                              id="btn-shortcuts-tooltip"
+                              type="button"
+                              className="flex items-center gap-1.5 px-2.5 py-1 bg-stone-850 hover:bg-stone-800 border border-stone-800 text-[10px] text-stone-400 hover:text-stone-200 rounded-lg transition-colors cursor-pointer font-mono font-bold"
+                            >
+                              <Keyboard size={11} className="text-amber-500" />
+                              <span>Keyboard Shortcuts</span>
+                            </button>
+                            <div className="absolute right-0 bottom-full mb-2 w-64 p-3 bg-stone-950 border border-stone-800 rounded-xl shadow-2xl invisible group-hover:visible transition-all duration-200 z-30 flex flex-col gap-1.5 text-[11px] text-stone-300 font-mono">
+                              <div className="text-[10px] uppercase font-bold text-amber-500 border-b border-stone-850 pb-1 mb-1 font-sans">
+                                Keyboard Navigation
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span>Prev Code/Msg:</span>
+                                <span className="bg-stone-855 text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold border border-stone-800">K or ↑</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span>Next Code/Msg:</span>
+                                <span className="bg-stone-855 text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold border border-stone-800">J or ↓</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span>Read/Open:</span>
+                                <span className="bg-stone-855 text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold border border-stone-800">Enter</span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span>Delete Msg:</span>
+                                <span className="bg-stone-855 text-amber-400 px-1.5 py-0.5 rounded text-[10px] font-bold border border-stone-800">Del</span>
+                              </div>
+                              <div className="text-[9px] text-stone-500 mt-1 font-sans italic border-t border-stone-850 pt-1 leading-relaxed">
+                                Tip: Click outside form fields to activate.
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div
+                          ref={messagesGridRef}
+                          id="messages-grid"
+                          className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-1"
+                        >
                         {displayedMessages.map((msg, index) => {
                       const isQuarantined = msg.status === 'quarantined';
                       const isRevealed = !!revealedMessages[msg.id];
@@ -1782,14 +1858,21 @@ export default function App() {
                           </div>
                           {/* Top Tag */}
                           <div className="flex justify-between items-center mb-1">
-                            <span className="text-[10px] text-stone-500 font-mono">
-                              {new Date(msg.createdAt).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {!readMessageIds.includes(msg.id) && (
+                                <span className="flex items-center gap-1.5 text-[8px] bg-amber-500 text-stone-950 font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider select-none animate-pulse">
+                                  New
+                                </span>
+                              )}
+                              <span className="text-[10px] text-stone-500 font-mono">
+                                {new Date(msg.createdAt).toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
 
                             <div className="flex items-center gap-1.5">
                               {isQuarantined && (
@@ -1864,7 +1947,7 @@ export default function App() {
                         </div>
                       );
                     })}
-                  </div>
+                  </div></>
                 )}
               </>
             )}
