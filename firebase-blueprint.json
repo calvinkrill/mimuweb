@@ -1,0 +1,98 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "User profile with safety settings and PIN",
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "Unique lowercase username"
+        },
+        "pin": {
+          "type": "string",
+          "description": "Hashed or raw PIN for authorization"
+        },
+        "customKeywords": {
+          "type": "array",
+          "description": "List of user-configured blocked keywords"
+        },
+        "aiSafetyShield": {
+          "type": "boolean",
+          "description": "Enable Gemini AI-based filtering"
+        },
+        "quarantineAction": {
+          "type": "string",
+          "enum": [
+            "quarantine",
+            "block"
+          ],
+          "description": "Action to take when a message is flagged"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of creation"
+        }
+      },
+      "required": [
+        "username",
+        "pin",
+        "customKeywords",
+        "aiSafetyShield",
+        "quarantineAction",
+        "createdAt"
+      ]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Anonymous message sent to a user",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique auto-generated ID"
+        },
+        "receiverUsername": {
+          "type": "string",
+          "description": "Username of the target recipient"
+        },
+        "text": {
+          "type": "string",
+          "description": "Content of the safe or flagged message"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "quarantined",
+            "blocked"
+          ],
+          "description": "Safety evaluation outcome"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when message was submitted"
+        }
+      },
+      "required": [
+        "id",
+        "receiverUsername",
+        "text",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "profiles/{username}": {
+      "schema": "Profile",
+      "description": "User settings searchable by lowercase username"
+    },
+    "messages/{messageId}": {
+      "schema": "Message",
+      "description": "All anonymous message logs"
+    }
+  }
+}

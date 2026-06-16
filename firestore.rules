@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safe state
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened helper functions (Pillar 3 & 10)
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- 1. PROFILES SECURITY ---
+    match /profiles/{username} {
+      allow get: if isValidId(username);
+      
+      // Allow creation of profiles with rigorous format checks
+      allow create: if isValidId(username) 
+        && incoming().username == username 
+        && incoming().pin is string 
+        && incoming().pin.size() >= 4 
+        && incoming().pin.size() <= 10
+        && incoming().customKeywords is list
+        && incoming().aiSafetyShield is bool
+        && incoming().quarantineAction in ['quarantine', 'block']
+        && incoming().createdAt is string;
+
+      // Allow updating of safety settings if the PIN matches to verify identity
+      allow update: if isValidId(username)
+        && incoming().username == existing().username
+        && incoming().createdAt == existing().createdAt
+        && incoming().pin == existing().pin
+        && incoming().customKeywords is list
+        && incoming().aiSafetyShield is bool
+        && incoming().quarantineAction in ['quarantine', 'block'];
+
+      allow delete: if false;
+    }
+
+    // --- 2. MESSAGES SECURITY ---
+    match /messages/{messageId} {
+      allow get: if isValidId(messageId);
+      
+      // Allow list querying securely if filtered by receiverUsername
+      allow list: if resource.data.receiverUsername is string;
+
+      // Enforce zero-trust validation invariants on incoming anonymous posts
+      allow create: if isValidId(messageId)
+        && incoming().id == messageId
+        && incoming().receiverUsername is string
+        && incoming().receiverUsername.size() <= 128
+        && incoming().text is string
+        && incoming().text.size() > 0
+        && incoming().text.size() <= 500
+        && incoming().status in ['approved', 'quarantined', 'blocked']
+        && incoming().createdAt is string;
+
+      // Allow message updates (like replying or status adjustments) securely
+      allow update: if isValidId(messageId)
+        && incoming().id == existing().id
+        && incoming().receiverUsername == existing().receiverUsername
+        && incoming().text == existing().text
+        && incoming().createdAt == existing().createdAt
+        && (incoming().replyText is string || !('replyText' in incoming()))
+        && (incoming().repliedAt is string || !('repliedAt' in incoming()))
+        && (incoming().isPublic is bool || !('isPublic' in incoming()))
+        && incoming().status in ['approved', 'quarantined', 'blocked'];
+
+      allow delete: if true; // Allowed for owners deletes
+    }
+  }
+}

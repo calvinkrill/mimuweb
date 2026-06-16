@@ -1,0 +1,6 @@
+{
+  "name": "mimu",
+  "description": "Anonymous messaging with custom keyword and AI-powered filters to prevent harassment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
