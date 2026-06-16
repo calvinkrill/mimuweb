@@ -235,7 +235,7 @@ export default function App() {
     };
 
     fetchWorldChat();
-    const interval = setInterval(fetchWorldChat, 4000);
+    const interval = setInterval(fetchWorldChat, 2000);
     return () => clearInterval(interval);
   }, [isWorldChatOpen]);
 
@@ -435,8 +435,8 @@ export default function App() {
     }
   };
 
-  const fetchInbox = async (usr: string, pinCode: string) => {
-    setMessagesLoading(true);
+  const fetchInbox = async (usr: string, pinCode: string, silent = false) => {
+    if (!silent) setMessagesLoading(true);
     try {
       const res = await fetch(`/api/messages/${usr}?pin=${pinCode}`);
       const data = await res.json();
@@ -444,11 +444,22 @@ export default function App() {
         setMessages(data.data);
       }
     } catch (err) {
-      showToast('Could not retrieve messages.');
+      if (!silent) showToast('Could not retrieve messages.');
     } finally {
-      setMessagesLoading(false);
+      if (!silent) setMessagesLoading(false);
     }
   };
+
+  // Poll inbox messages periodically in the background for near-instant message receipt
+  useEffect(() => {
+    if (!myProfile || !userPin) return;
+
+    const interval = setInterval(() => {
+      fetchInbox(myProfile.username, userPin, true);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [myProfile, userPin]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
