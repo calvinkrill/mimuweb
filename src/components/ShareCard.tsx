@@ -74,7 +74,7 @@ export default function ShareCard({ messageText, username, onClose }: ShareCardP
 
         <div className="flex items-center gap-2 mb-4 text-amber-400 font-bold font-sans">
           <Palette size={20} />
-          <span>mimu Story Designer</span>
+          <span>Message</span>
         </div>
 
         {/* The designer sticker */}
@@ -148,7 +148,7 @@ export default function ShareCard({ messageText, username, onClose }: ShareCardP
             ) : (
               <>
                 <Download size={18} />
-                <span>Save Sticker Photo</span>
+                <span>Save</span>
               </>
             )}
           </button>

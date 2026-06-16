@@ -74,97 +74,14 @@ async function assessMessageSafety(
     }
   }
 
-  // 2. Local rule-based profanity & harassment regex guards
-  const abuseRegex = /\b(fuck|shit|asshole|bitch|bastard|cunt|dick|whore|slut|rape|kill yourself|kys|murder|die|choke|worthless)\b/i;
-  if (abuseRegex.test(normText)) {
-    return {
-      status: 'blocked',
-      safetyAnalysis: {
-        isSafe: false,
-        score: 95,
-        categories: ['Severe Profanity / Verbal Abuse'],
-        explanation: 'Flagged immediately by local server safety filters protecting against severe profanity or harassment.',
-      },
-    };
-  }
-
-  // 3. AI-powered Moderation Shield
-  if (aiEnabled && aiClient) {
-    try {
-      const promptText = `Evaluate this anonymous message written for a classmate or peer. You must detect abusive behavior, cyberbullying, sexual harassment, explicit slurs, physical threats, severe insults, and hate speech.
-Message text: "${text}"`;
-
-      const response = await aiClient.models.generateContent({
-        model: 'gemini-3.5-flash',
-        contents: promptText,
-        config: {
-          systemInstruction: `You are the core safety gatekeeper for 'mimu' - an anonymous messaging app designed to share friendly Q&A and support constructive peer-to-peer feedback.
-Your goal is to isolate and neutralize cyberbullying, physical harms, harassment, and toxic slurs while allowing lighthearted banter or friendly advice.
-You must return a well-formatted JSON response adhering strictly to this schema.`,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              isSafe: {
-                type: Type.BOOLEAN,
-                description: 'Set to true if text is warm, playful, neutral, or safe. Set to false if it contains targeted insults, verbal abuse, cyberbullying, hate speech, threats, or severe harassment.',
-              },
-              score: {
-                type: Type.INTEGER,
-                description: 'Toxicity rating from 0 (completely nice and constructive) to 100 (hostile/threatening/abusive).',
-              },
-              categories: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING },
-                description: 'Specific concerns detected (e.g., ["Harassment", "Cyberbullying", "Profanity", "Slur", "Threat"]). Leave empty if clean.',
-              },
-              explanation: {
-                type: Type.STRING,
-                description: 'A friendly, brief, human-readable summary of the safety check to give the profile owner perspective.',
-              },
-            },
-            required: ['isSafe', 'score', 'categories', 'explanation'],
-          },
-        },
-      });
-
-      const responseText = response.text?.trim() || '';
-      if (responseText) {
-        const parsed = JSON.parse(responseText);
-        let status: 'approved' | 'quarantined' | 'blocked' = 'approved';
-
-        if (!parsed.isSafe) {
-          // If the toxic severity score is very high OR profile owner opted to 'block' everything flagged:
-          if (parsed.score >= 70 || quarantineAction === 'block') {
-            status = 'blocked';
-          } else {
-            status = 'quarantined';
-          }
-        }
-
-        return {
-          status,
-          safetyAnalysis: {
-            isSafe: parsed.isSafe,
-            score: parsed.score ?? 50,
-            categories: parsed.categories ?? [],
-            explanation: parsed.explanation ?? 'Screened by AI Safety Shield.',
-          },
-        };
-      }
-    } catch (err) {
-      console.error('Error during Gemini AI Safety evaluation:', err);
-    }
-  }
-
-  // Fallback approved if no filters are triggered
+  // Under user request, automated filters are removed to allow users to say anything
   return {
     status: 'approved',
     safetyAnalysis: {
       isSafe: true,
       score: 0,
       categories: [],
-      explanation: 'No safety issues detected by server analysis.',
+      explanation: 'Passed.',
     },
   };
 }
@@ -175,7 +92,7 @@ You must return a well-formatted JSON response adhering strictly to this schema.
 app.post('/api/register', async (req, res) => {
   const { username, pin } = req.body;
   if (!username || !pin) {
-    return res.status(400).json({ success: false, error: 'Username and security PIN are required.' });
+    return res.status(400).json({ success: false, error: 'Username and security password are required.' });
   }
 
   const normalizedUsername = username.trim().toLowerCase();
@@ -187,10 +104,6 @@ app.post('/api/register', async (req, res) => {
 
   if (!/^[a-zA-Z0-9_\-]+$/.test(normalizedUsername)) {
     return res.status(400).json({ success: false, error: 'Username can only contain numbers, letters, hyphens, and underscores.' });
-  }
-
-  if (pinString.length < 4) {
-    return res.status(400).json({ success: false, error: 'PIN must be at least 4 digits.' });
   }
 
   const existing = await dbStore.getProfile(normalizedUsername);
@@ -219,7 +132,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { username, pin } = req.body;
   if (!username || !pin) {
-    return res.status(400).json({ success: false, error: 'Username and PIN are required.' });
+    return res.status(400).json({ success: false, error: 'Username and password are required.' });
   }
 
   const profile = await dbStore.getProfile(String(username).trim());
@@ -228,7 +141,7 @@ app.post('/api/login', async (req, res) => {
   }
 
   if (profile.pin !== String(pin).trim()) {
-    return res.status(401).json({ success: false, error: 'Incorrect security PIN. Please try again.' });
+    return res.status(401).json({ success: false, error: 'Incorrect security password. Please try again.' });
   }
 
   const { pin: _, ...safeProfile } = profile;
@@ -530,11 +443,6 @@ app.post('/api/world-chat/submit', async (req, res) => {
   }
   if (cleanText.length > 200) {
     return res.status(400).json({ success: false, error: 'Stay concise! Keep it under 200 characters.' });
-  }
-
-  const abuseRegex = /\b(fuck|shit|asshole|bitch|bastard|cunt|dick|whore|slut|rape|kill yourself|kys|murder|die|choke|worthless)\b/i;
-  if (abuseRegex.test(cleanText.toLowerCase())) {
-    return res.status(422).json({ success: false, error: 'Keep the chat friendly! Message filtered.' });
   }
 
   const cleanName = String(senderName || 'Anonymous Chatty').trim();

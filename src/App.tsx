@@ -33,6 +33,7 @@ import {
   Fish,
   Crown,
   QrCode,
+  Download,
   Calendar,
   Search,
   Share2,
@@ -40,6 +41,13 @@ import {
   Globe,
   MessageCircle,
   Keyboard,
+  Ghost,
+  Gamepad2,
+  Heart,
+  Rocket,
+  Flame,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import QRCode from 'qrcode';
 import { motion, AnimatePresence } from 'motion/react';
@@ -51,11 +59,18 @@ const AVATAR_OPTIONS = [
   { id: 'bear', name: 'Bear', icon: Smile, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' },
   { id: 'cat', name: 'Cat', icon: Cat, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
   { id: 'dog', name: 'Dog', icon: Dog, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' },
-  { id: 'rabbit', name: 'Rabbit', icon: Rabbit, color: 'text-purple-400 bg-purple-505/10 border-purple-500/20' },
+  { id: 'rabbit', name: 'Rabbit', icon: Rabbit, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
   { id: 'bird', name: 'Bird', icon: Bird, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
-  { id: 'fish', name: 'Fish', icon: Fish, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-505/20' },
+  { id: 'fish', name: 'Fish', icon: Fish, color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20' },
   { id: 'crown', name: 'Crown', icon: Crown, color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
   { id: 'star', name: 'Hero', icon: Sparkles, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+  { id: 'ghost', name: 'Ghost', icon: Ghost, color: 'text-fuchsia-400 bg-fuchsia-500/10 border-fuchsia-500/20' },
+  { id: 'gamer', name: 'Gamer', icon: Gamepad2, color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20' },
+  { id: 'heart', name: 'Lovely', icon: Heart, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
+  { id: 'rocket', name: 'Cosmic', icon: Rocket, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+  { id: 'fire', name: 'Spicy', icon: Flame, color: 'text-amber-500 bg-amber-600/10 border-amber-600/20' },
+  { id: 'sun', name: 'Sunny', icon: Sun, color: 'text-yellow-500 bg-yellow-600/10 border-yellow-600/20' },
+  { id: 'moon', name: 'Luna', icon: Moon, color: 'text-slate-400 bg-slate-500/10 border-slate-500/20' },
 ];
 
 function ProfileAvatar({ id, className = "w-10 h-10" }: { id?: string; className?: string }) {
@@ -467,7 +482,7 @@ export default function App() {
     setAuthSuccess('');
 
     if (!usernameInput || !pinInput) {
-      setAuthError('Please fill out both the username and security PIN.');
+      setAuthError('Please fill out both the username and security password.');
       return;
     }
 
@@ -512,7 +527,7 @@ export default function App() {
     setAuthError('');
 
     if (!usernameInput || !pinInput) {
-      setAuthError('Please fill out both the username and security PIN.');
+      setAuthError('Please fill out both the username and security password.');
       return;
     }
 
@@ -548,7 +563,7 @@ export default function App() {
     }
   };
 
-  // Submit Safety Guardrails updates to the server
+  // Submit Message Filter updates to the server
   const handleSaveSettings = async () => {
     if (!myProfile || !userPin) return;
 
@@ -574,10 +589,10 @@ export default function App() {
         setMyProfile(data.profile);
         setSelectedAvatarId(data.profile.avatarId || 'bear');
         setSettingsSuccess(true);
-        showToast('Safety filters updated successfully!');
+        showToast('Message Filter settings updated!');
         setTimeout(() => setSettingsSuccess(false), 3000);
       } else {
-        showToast(data.error || 'Could not save safety guardrails.');
+        showToast(data.error || 'Could not save filter settings.');
       }
     } catch {
       showToast('Connection error updating profile settings.');
@@ -947,8 +962,11 @@ export default function App() {
         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-red-600/10 to-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex justify-between items-center border-b border-stone-800/60 pb-3 mb-4">
-          <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-sans">
-            <MessageSquare size={13} />
+          <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-2 font-sans">
+            {/* Brand logo favicon: soft-rounded white square */}
+            <div className="w-5 h-5 bg-white rounded-lg flex items-center justify-center shadow-md shadow-white/5 select-none shrink-0 border border-white/10" title="mimu logo">
+              <span className="text-[11px] font-black text-stone-950 font-sans tracking-tighter leading-none">m</span>
+            </div>
             <span>Selected Message</span>
           </span>
           <button
@@ -1070,7 +1088,7 @@ export default function App() {
             className="flex-1 glossy-gold-btn text-neutral-950 text-xs font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-amber-500/10 hover:-translate-y-0.5 transition-all text-center flex items-center justify-center gap-1.5 cursor-pointer animate-shimmer font-sans"
           >
             <Sparkles size={14} />
-            <span>Design sharing story</span>
+            <span>Share Message</span>
           </button>
           <button
             onClick={() => handleDeleteMessage(msg.id)}
@@ -1107,8 +1125,8 @@ export default function App() {
               <MessageSquare size={44} className="text-amber-400 drop-shadow-[0_2px_10px_rgba(245,158,11,0.4)]" />
             </div>
           </div>
-          <h1 className="text-5xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-200 bg-clip-text text-transparent drop-shadow-md">
-            Mimu
+          <h1 className="text-6xl md:text-7xl font-black tracking-widest uppercase bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-200 bg-clip-text text-transparent drop-shadow-lg">
+            MIMU
           </h1>
           <p className="text-amber-100/60 uppercase tracking-[0.3em] font-extrabold text-[10px]">
             created by kenzu
@@ -1155,8 +1173,8 @@ export default function App() {
             >
               <MessageSquare size={32} className="text-stone-950" />
             </motion.div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-100 bg-clip-text text-transparent flex items-center gap-2">
-              mimu
+            <h1 className="text-6xl md:text-7xl font-black tracking-widest uppercase bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-100 bg-clip-text text-transparent flex items-center gap-2 drop-shadow-lg">
+              MIMU
             </h1>
             <p className="text-amber-100/60 text-sm max-w-xs leading-relaxed mt-2 font-medium">
               Anonymous message sticker links for your peer group with custom safety logic.
@@ -1229,28 +1247,26 @@ export default function App() {
                 </div>
                 {authMode === 'register' && (
                   <span className="text-[10px] text-stone-500 block mt-1">
-                    Your share link: mimu.app/?u=yourname (Local PIN credentials saved to browser)
+                    Your share link: mimu.app/?u=yourname (Local credentials saved to browser)
                   </span>
                 )}
               </div>
 
               <div>
                 <label className="text-xs font-semibold uppercase text-stone-400 tracking-wider block mb-1">
-                  Security PIN (At least 4 digits)
+                  Security Password
                 </label>
                 <div className="relative">
                   <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
                   <input
                     id="input-pin"
                     type="password"
-                    pattern="[0-9]*"
-                    inputMode="numeric"
-                    maxLength={10}
-                    placeholder="••••"
+                    maxLength={100}
+                    placeholder="Enter security password"
                     value={pinInput}
-                    onChange={(e) => setPinInput(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setPinInput(e.target.value)}
                     disabled={authLoading}
-                    className="w-full pl-9 pr-4 py-3 bg-neutral-950 border border-stone-800 rounded-xl text-sm tracking-widest focus:border-amber-500 focus:outline-none transition-colors text-stone-100"
+                    className="w-full pl-9 pr-4 py-3 bg-neutral-950 border border-stone-800 rounded-xl text-sm focus:border-amber-500 focus:outline-none transition-colors text-stone-100"
                   />
                 </div>
                 <span className="text-[10px] text-stone-500 block mt-1">
@@ -1269,30 +1285,14 @@ export default function App() {
                 ) : (
                   <>
                     <Sparkles size={16} />
-                    <span>{authMode === 'register' ? 'Create Local Account' : 'Secure Sign In'}</span>
+                    <span>{authMode === 'register' ? ' Create Account' : 'Secure Sign In'}</span>
                   </>
                 )}
               </button>
             </form>
           </motion.div>
 
-          {/* Value Prop banner */}
-          <div className="flex flex-col md:flex-row items-center gap-6 mt-12 max-w-xl text-stone-400 text-xs text-center md:text-left z-10 px-4">
-            <div className="flex items-center gap-3 bg-stone-900/40 border border-stone-800 p-4 rounded-2xl md:flex-1">
-              <ShieldCheck size={36} className="text-amber-500 flex-shrink-0" />
-              <div>
-                <p className="font-bold text-stone-200">Custom Keywords</p>
-                <p>Add triggers to flag name-calling or unwanted words instantly before they touch you.</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 bg-stone-900/40 border border-stone-800 p-4 rounded-2xl md:flex-1">
-              <Sparkles size={36} className="text-amber-400 flex-shrink-0" />
-              <div>
-                <p className="font-bold text-stone-200">AI Bully Screen</p>
-                <p>Gemini verifies the tone of each msg, auto-blurring severe content or blocking trolls.</p>
-              </div>
-            </div>
-          </div>
+
         </div>
       )}
 
@@ -1525,8 +1525,11 @@ export default function App() {
 
                             {/* Reply answer */}
                             <div className="pl-3 border-l-2 border-amber-500/40">
-                              <div className="flex items-center gap-1.5 mb-1 bg-stone-900 rounded-md">
-                                <span className="w-4 h-4 bg-gradient-to-tr from-amber-600 to-yellow-400 rounded-md flex items-center justify-center text-[8px] font-black text-stone-950">m</span>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                {/* Brand logo favicon: soft-rounded white square */}
+                                <div className="w-5 h-5 bg-white rounded-md flex items-center justify-center shadow-md select-none shrink-0 border border-white/10" title="mimu logo">
+                                  <span className="text-[11px] font-black text-stone-950 font-sans tracking-tighter leading-none">m</span>
+                                </div>
                                 <span className="text-[10px] text-amber-400 font-extrabold uppercase tracking-wide">
                                   @{targetUsername}'s response
                                 </span>
@@ -1565,7 +1568,7 @@ export default function App() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
-                  <span className="text-xs text-emerald-400 font-bold tracking-wider uppercase">Active Sticker Inbox</span>
+                  <span className="text-xs text-emerald-400 font-bold tracking-wider uppercase">Avatar</span>
                 </div>
                 <h2 className="text-2xl font-black text-white mt-1">@{myProfile.username}</h2>
               </div>
@@ -1647,7 +1650,7 @@ export default function App() {
               }`}
             >
               <Settings size={16} className={activeTab === 'safety' ? 'text-amber-400' : ''} />
-              <span>Safety Guardrails</span>
+              <span>Message Filter</span>
               {countFlagged() > 0 && (
                 <span className="bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full px-2 py-0.5 text-[10px] font-semibold flex items-center gap-0.5">
                   <ShieldAlert size={10} />
@@ -1870,6 +1873,10 @@ export default function App() {
                           {/* Top Tag */}
                           <div className="flex justify-between items-center mb-1">
                             <div className="flex items-center gap-2">
+                              {/* Brand logo favicon: a beautiful soft-rounded white square on the dark card, matching the attached photo */}
+                              <div className="w-5 h-5 bg-white rounded-lg flex items-center justify-center shadow-md shadow-white/5 select-none shrink-0 border border-white/10" title="mimu logo">
+                                <span className="text-[11px] font-black text-stone-950 font-sans tracking-tighter leading-none">m</span>
+                              </div>
                               {!readMessageIds.includes(msg.id) && (
                                 <span className="flex items-center gap-1.5 text-[8px] bg-amber-500 text-stone-950 font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider select-none animate-pulse">
                                   New
@@ -1993,10 +2000,10 @@ export default function App() {
             <div className="glossy-card rounded-3xl p-6 shadow-xl max-w-2xl mx-auto w-full animate-shimmer">
               <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-2 font-sans">
                 <ShieldCheck className="text-amber-400" />
-                Custom Harassment Filters
+                Message Filter Settings
               </h3>
               <p className="text-stone-400 text-xs leading-relaxed mb-6">
-                mimu lets you completely control your inbox. Senders whose content is flagged will either be quarantined or blocked based on your settings.
+                mimu lets you block bad words. Senders can speak freely, but any message matching your blocklist will be automatically hidden.
               </p>
 
               {/* Profile Mascot Avatar Picker */}
@@ -2091,10 +2098,10 @@ export default function App() {
                 <div className="flex items-center justify-between mb-2">
                   <div>
                     <span className="text-xs uppercase font-extrabold tracking-widest text-amber-500 block font-sans">
-                      2. Gemini AI safety shield
+                      2. AI Message Scanner
                     </span>
                     <p className="text-stone-400 text-[11px] leading-relaxed max-w-sm mt-1">
-                      Turn on Gemini-powered peer safety validation. We auto-analyze text tone for cyberbullying, insults, and harassment before delivering them.
+                      Check message tone with AI support. It will help review tone before messages reach your inbox.
                     </p>
                   </div>
                   <button
@@ -2114,10 +2121,10 @@ export default function App() {
               {/* Setting 3: Policies for flagged contents */}
               <div className="pb-6">
                 <span className="text-xs uppercase font-extrabold tracking-widest text-amber-500 block mb-2 font-sans">
-                  3. Violation Escalation Actions
+                  3. Filter Actions
                 </span>
                 <p className="text-stone-400 text-[11px] mb-3 leading-relaxed">
-                  Decide how heavily you react when a message fails verification checks or triggers triggers.
+                  Choose what to do if a message contains blocked words from your list.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2129,9 +2136,9 @@ export default function App() {
                         : 'bg-neutral-950 border-stone-800 text-stone-400'
                     }`}
                   >
-                    <span className="font-bold text-xs block text-stone-200">Flag & Quarantine Blur</span>
+                    <span className="font-bold text-xs block text-stone-200">Hide & Blur Message</span>
                     <span className="text-[10px] mt-1 block leading-normal opacity-85">
-                      Messages show up blurred in your card inbox with standard AI warning headers. Unseal them manually whenever you wish.
+                      Blocked messages will be blurred in your inbox. You can still reveal and read them if you want.
                     </span>
                   </div>
 
@@ -2143,9 +2150,9 @@ export default function App() {
                         : 'bg-neutral-950 border-stone-800 text-stone-400'
                     }`}
                   >
-                    <span className="font-bold text-xs block text-stone-200">Reject Entirely (Zero Tolerance)</span>
+                    <span className="font-bold text-xs block text-stone-200">Block Message Entirely</span>
                     <span className="text-[10px] mt-1 block leading-normal opacity-85">
-                      Violating messages are rejected on submit. The sender is polite asking to keep feedback warm, saving you from receiving bad vibes.
+                      The message will be completely rejected when submitted. The sender will be asked to rewrite it.
                     </span>
                   </div>
                 </div>
@@ -2159,7 +2166,7 @@ export default function App() {
                   disabled={settingsSaving}
                   className="glossy-gold-btn text-black font-extrabold text-xs py-3.5 px-6 rounded-xl cursor-pointer shadow-lg shadow-amber-500/10 transition-all disabled:opacity-50"
                 >
-                  {settingsSaving ? 'Saving guardrails...' : 'Confirm Safety Settings'}
+                  {settingsSaving ? 'Saving filter settings...' : 'Save Filter Settings'}
                 </button>
               </div>
             </div>
@@ -2204,6 +2211,92 @@ export default function App() {
                 username={myProfile?.username || ''}
                 onClose={() => setIsShareModalOpen(false)}
               />
+            )}
+          </AnimatePresence>
+
+          {/* QR Code Modal */}
+          <AnimatePresence>
+            {showQrModal && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-stone-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
+                onClick={() => setShowQrModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  className="bg-stone-900 border border-stone-800 text-stone-200 rounded-3xl p-6 shadow-2xl max-w-sm w-full relative overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-base font-bold text-white flex items-center gap-2 font-sans">
+                      <QrCode className="text-amber-400" size={18} />
+                      Share Profile QR Code
+                    </h3>
+                    <button
+                      onClick={() => setShowQrModal(false)}
+                      className="p-1.5 hover:bg-stone-800 text-stone-400 hover:text-white rounded-lg transition-colors cursor-pointer"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+
+                  <p className="text-stone-400 text-xs mb-5 font-medium leading-relaxed">
+                    Saves your unique link to receive anonymous messages! Let others scan it or copy the link below.
+                  </p>
+
+                  <div className="bg-white p-4 rounded-2xl flex items-center justify-center shadow-inner max-w-[240px] mx-auto mb-5 border-4 border-stone-800/20">
+                    {qrDataUrl ? (
+                      <img
+                        src={qrDataUrl}
+                        alt="Profile QR Code"
+                        className="w-full h-auto rounded-lg select-none"
+                        style={{ imageRendering: 'pixelated' }}
+                      />
+                    ) : (
+                      <div className="w-[200px] h-[200px] flex items-center justify-center">
+                        <div className="w-8 h-8 border-2 border-stone-900 border-t-amber-500 rounded-full animate-spin" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-neutral-950/50 rounded-xl p-3 border border-stone-850 flex items-center justify-between mb-4">
+                    <span className="text-[10px] font-mono text-stone-400 truncate max-w-[190px]">
+                      {`${window.location.origin}/?u=${myProfile?.username}`}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const shareUrl = `${window.location.origin}/?u=${myProfile?.username}`;
+                        navigator.clipboard.writeText(shareUrl)
+                          .then(() => showToast('Profile link copied to clipboard!'))
+                          .catch(() => showToast('Failed to copy link.'));
+                      }}
+                      className="text-[10px] font-black uppercase text-amber-400 hover:text-amber-300 font-mono"
+                    >
+                      Copy Link
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (qrDataUrl) {
+                        const link = document.createElement('a');
+                        link.href = qrDataUrl;
+                        link.download = `${myProfile?.username || 'mimu'}_qr_code.png`;
+                        link.click();
+                        showToast('QR Code download started!');
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-550 text-stone-950 font-black text-xs py-3 rounded-xl transition-all shadow-lg active:scale-[0.98] cursor-pointer flex items-center justify-center gap-1.5 font-sans"
+                  >
+                    <Download size={14} />
+                    <span>Download QR Code Image</span>
+                  </button>
+                </motion.div>
+              </motion.div>
             )}
           </AnimatePresence>
 
@@ -2286,7 +2379,7 @@ export default function App() {
                   <div className="flex items-center gap-3">
                     <span className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse" />
                     <div>
-                      <h3 className="text-sm md:text-base font-black text-white uppercase tracking-wider">mimu World Chat Dashboard</h3>
+                      <h3 className="text-sm md:text-base font-black text-white uppercase tracking-wider">MIMU CHAT</h3>
                       <p className="text-[10px] md:text-xs text-stone-500 font-medium lowercase">account required to chat, view only for guests</p>
                     </div>
                   </div>
