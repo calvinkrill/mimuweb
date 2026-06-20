@@ -80,7 +80,7 @@ export default function ShareCard({ messageText, username, onClose }: ShareCardP
         {/* The designer sticker */}
         <div
           ref={cardRef}
-          className={`relative p-8 rounded-2xl flex flex-col justify-between items-center text-center shadow-2xl aspect-square w-full bg-gradient-to-tr ${GRADIENTS[selectedGradient].class} transition-all duration-300 overflow-hidden`}
+          className={`relative p-8 rounded-2xl flex flex-col justify-between items-center text-center shadow-2xl aspect-video w-full bg-gradient-to-tr ${GRADIENTS[selectedGradient].class} transition-all duration-300 overflow-hidden`}
         >
           {/* Subtle overlay accent */}
           <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />

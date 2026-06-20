@@ -83,6 +83,53 @@
         "status",
         "createdAt"
       ]
+    },
+    "WorldChatMessage": {
+      "title": "WorldChatMessage",
+      "description": "A live, non-anonymous message sent to the global community room",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique UUID for the chat message"
+        },
+        "senderName": {
+          "type": "string",
+          "description": "Sender username or nickname"
+        },
+        "senderId": {
+          "type": "string",
+          "description": "UUID of the sender browser session"
+        },
+        "text": {
+          "type": "string",
+          "description": "Raw message text content"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp"
+        },
+        "replyTo": {
+          "type": "object",
+          "description": "Optional original quote reference for target replies",
+          "properties": {
+            "senderName": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "senderName",
+        "senderId",
+        "text",
+        "createdAt"
+      ]
     }
   },
   "firestore": {
@@ -93,6 +140,10 @@
     "messages/{messageId}": {
       "schema": "Message",
       "description": "All anonymous message logs"
+    },
+    "world_chat/{messageId}": {
+      "schema": "WorldChatMessage",
+      "description": "The persistent stream of community messages"
     }
   }
 }

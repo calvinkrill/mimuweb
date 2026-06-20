@@ -31,6 +31,8 @@ export interface Message {
   repliedAt?: string;
   isPublic?: boolean;
   isPinned?: boolean;
+  isStarred?: boolean;
+  isRead?: boolean;
 }
 
 export interface WorldChatMessage {
@@ -39,6 +41,11 @@ export interface WorldChatMessage {
   senderId: string;
   text: string;
   createdAt: string;
+  photoUrl?: string;
+  replyTo?: {
+    senderName: string;
+    text: string;
+  };
 }
 
 export interface ApiResponse<T> {
@@ -46,4 +53,25 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
   reason?: string;
+}
+
+export interface VideoRoom {
+  id: string;
+  name: string;
+  type: 'public' | 'private';
+  password?: string;
+  maxUsers: number;
+  creator: string;
+  participants: { username: string; joinedAt: string }[];
+  createdAt: string;
+}
+
+export interface SignalMessage {
+  id: string;
+  roomId: string;
+  from: string;
+  to: string;
+  type: 'offer' | 'answer' | 'candidate';
+  payload: any;
+  createdAt: string;
 }
